@@ -8,23 +8,41 @@ import {
   Link,
 } from '@mui/material';
 import { NavLink } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store';
+import { setSelectedCrypto } from '@/store/slices/cryptoSlice';
+import { cryptoCurrencies } from '@/utils/constants';
 
 const Header: React.FC = () => {
-  const [crypto, setCrypto] = React.useState('bitcoin');
+  const dispatch = useDispatch<AppDispatch>();
 
-  const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setCrypto(event.target.value as string);
+  // Access the selectedCrypto value from Redux store
+  const selectedCrypto = useSelector(
+    (state: RootState) => state.crypto.selectedCrypto,
+  );
+
+  // Handle the change in dropdown
+  const handleSelectChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    dispatch(setSelectedCrypto(event.target.value as string));
   };
 
   return (
     <AppBar position="static" color="primary">
       <Toolbar>
         <Typography variant="h6" style={{ flexGrow: 1 }}>
-          Crypto Dashboard
+          {/* Crypto Dashboard */}
+          Crypto Liveboard
         </Typography>
-        <Select value={crypto} onChange={handleChange}>
-          <MenuItem value="bitcoin">Bitcoin</MenuItem>
-          <MenuItem value="ethereum">Ethereum</MenuItem>
+        <Select
+          value={selectedCrypto} // Use value instead of defaultValue
+          onChange={handleSelectChange}
+          sx={{ width: 200, padding: 1, fontSize: '16px' }}
+        >
+          {cryptoCurrencies.map((crypto) => (
+            <MenuItem key={crypto.id} value={crypto.id}>
+              {crypto.name}
+            </MenuItem>
+          ))}
         </Select>
         <nav style={{ marginLeft: '1rem' }}>
           <Link

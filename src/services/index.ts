@@ -1,46 +1,54 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://api.coingecko.com/api/v3';
+// Fetch current price, percentage change, market cap, supply, and volume
+export const fetchCryptoData = async (cryptoId: string) => {
+  // Fetch basic info from CoinCap API
+  const currentResponse = await axios.get(
+    `https://api.coincap.io/v2/assets/${cryptoId}`,
+  );
 
-export const fetchCryptoData = async (currency: string) => {
-  const response = await axios.get(`${BASE_URL}/simple/price`, {
-    params: {
-      ids: currency,
-      vs_currencies: 'usd',
-      include_24hr_change: true,
-    },
-  });
-  return {
-    price: response.data[currency].usd,
-    percentageChange: response.data[currency].usd_24h_change,
-  };
-};
+  const currentPrice = parseFloat(currentResponse.data.data.priceUsd);
+  const percentageChange24h = parseFloat(
+    currentResponse.data.data.changePercent24Hr,
+  );
+  const marketCap = parseFloat(currentResponse.data.data.marketCapUsd);
+  const circulatingSupply = parseFloat(currentResponse.data.data.supply);
+  const tradingVolume = parseFloat(currentResponse.data.data.volumeUsd24Hr);
 
-export const fetchCryptoOverview = async (currency: string) => {
-  const response = await axios.get(`${BASE_URL}/coins/${currency}`);
-  const { market_data, description, market_cap_rank } = response.data;
-  return {
-    marketCap: market_data.market_cap.usd,
-    totalSupply: market_data.total_supply,
-    circulatingSupply: market_data.circulating_supply,
-    allTimeHigh: market_data.ath.usd,
-    rank: market_cap_rank,
-    description: description.en,
-  };
-};
+  // Fetch description from CoinGecko API
+  const descriptionResponse = await axios.get(
+    `https://api.coingecko.com/api/v3/coins/${cryptoId}`,
+  );
 
-export const fetchCryptoHistory = async (currency: string) => {
-  const response = await axios.get(
-    `${BASE_URL}/coins/${currency}/market_chart`,
+  const description =
+    descriptionResponse.data?.description?.en || 'Description not available';
+
+  // Fetch historical data (last 7 days)
+  const now = Date.now();
+  const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
+  const historicalResponse = await axios.get(
+    `https://api.coincap.io/v2/assets/${cryptoId}/history`,
     {
       params: {
-        vs_currency: 'usd',
-        days: 7,
+        interval: 'd1', // Daily intervals
+        start: sevenDaysAgo,
+        end: now,
       },
     },
   );
-  return response.data.prices.map(([date, price]: [number, number]) => ({
-    date: new Date(date).toLocaleDateString(),
-    price,
-  }));
+
+  const historicalData = historicalResponse.data.data.map((entry: any) =>
+    parseFloat(entry.priceUsd),
+  );
+
+  return {
+    currentPrice,
+    percentageChange24h,
+    marketCap,
+    circulatingSupply,
+    tradingVolume,
+    historicalData,
+    description,
+  };
 };

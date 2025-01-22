@@ -14,7 +14,9 @@
       "@components/*": ["src/components/*"],
       "@pages/*": ["src/pages/*"],
       "@utils/*": ["src/utils/*"],
-      "@store/*": ["src/store/*"]
+      "@store/*": ["src/store/*"],
+      "@layouts/*": ["src/layouts/*"],
+      "@services/*": ["src/services/*"]
     },
     "allowImportingTsExtensions": true,
     "types": ["node"]

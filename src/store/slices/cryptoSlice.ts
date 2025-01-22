@@ -1,54 +1,27 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface CryptoState {
   selectedCrypto: string;
-  currentPrice: number | null;
-  percentageChange: number | null;
-  historicalData: any[];
-  overview: any | null;
-  status: string;
+  selectedCurrency: string;
 }
 
 const initialState: CryptoState = {
-  selectedCrypto: 'bitcoin',
-  currentPrice: null,
-  percentageChange: null,
-  historicalData: [],
-  overview: null,
-  status: 'idle',
+  selectedCrypto: 'bitcoin', // Default selected crypto
+  selectedCurrency: 'usd',
 };
-
-export const fetchCryptoData = createAsyncThunk(
-  'crypto/fetchCryptoData',
-  async (crypto: string) => {
-    const response = await axios.get(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${crypto}&vs_currencies=usd&include_24hr_change=true`,
-    );
-    return response.data;
-  },
-);
 
 const cryptoSlice = createSlice({
   name: 'crypto',
   initialState,
   reducers: {
-    setCrypto(state, action) {
+    setSelectedCrypto(state, action: PayloadAction<string>) {
       state.selectedCrypto = action.payload;
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchCryptoData.pending, (state) => {
-        state.status = 'loading';
-      })
-      .addCase(fetchCryptoData.fulfilled, (state, action) => {
-        state.currentPrice = action.payload.usd;
-        state.percentageChange = action.payload.usd_24h_change;
-        state.status = 'succeeded';
-      });
+    setSelectedCurrency: (state, action: PayloadAction<string>) => {
+      state.selectedCurrency = action.payload;
+    },
   },
 });
 
-export const { setCrypto } = cryptoSlice.actions;
+export const { setSelectedCrypto } = cryptoSlice.actions;
 export default cryptoSlice.reducer;
