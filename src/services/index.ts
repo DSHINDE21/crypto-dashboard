@@ -1,18 +1,24 @@
 import axios from 'axios';
 
-export const fetchCryptoData = async (cryptoId: string, dateRange: number) => {
+export const fetchCryptoData = async (
+  cryptoId: string,
+  dateRange: number = 7,
+) => {
   // Fetch basic info from CoinCap API
   const currentResponse = await axios.get(
     `https://api.coincap.io/v2/assets/${cryptoId}`,
   );
 
   const currentPrice = parseFloat(currentResponse.data.data.priceUsd);
+
   const percentageChange24h = parseFloat(
     currentResponse.data.data.changePercent24Hr,
   );
   const marketCap = parseFloat(currentResponse.data.data.marketCapUsd);
   const circulatingSupply = parseFloat(currentResponse.data.data.supply);
   const tradingVolume = parseFloat(currentResponse.data.data.volumeUsd24Hr);
+  const currencyRank = parseFloat(currentResponse.data.data.rank);
+  const maxSupply = parseFloat(currentResponse.data.data?.maxSupply);
 
   // Fetch description and icon from CoinGecko API
   const descriptionResponse = await axios.get(
@@ -22,6 +28,10 @@ export const fetchCryptoData = async (cryptoId: string, dateRange: number) => {
   const description =
     descriptionResponse.data?.description?.en || 'Description not available';
   const iconUrl = descriptionResponse.data?.image?.small; // Get the small icon URL
+
+  // Get All-time High (ATH) data from CoinGecko
+  const athPrice = descriptionResponse.data?.market_data?.ath?.usd || 0; // ATH in USD
+  const athDate = descriptionResponse.data?.market_data?.ath_date?.usd; // ATH date
 
   // Fetch historical data based on date range
   const now = Date.now();
@@ -50,6 +60,10 @@ export const fetchCryptoData = async (cryptoId: string, dateRange: number) => {
     tradingVolume,
     historicalData,
     description,
-    iconUrl, // Add iconUrl to the return data
+    iconUrl,
+    currencyRank,
+    athPrice,
+    athDate,
+    maxSupply,
   };
 };

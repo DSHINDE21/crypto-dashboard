@@ -150,7 +150,7 @@ const Dashboard: React.FC = () => {
           <Avatar
             alt={`${selectedCrypto} logo`}
             src={iconUrl}
-            sx={{ width: 30, height: 30, marginRight: 1 }}
+            sx={{ width: 40, height: 40, marginRight: 1 }}
           />
           {selectedCrypto.charAt(0).toUpperCase() + selectedCrypto.slice(1)}
         </Box>

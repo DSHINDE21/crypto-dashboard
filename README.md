@@ -56,14 +56,12 @@ React Query: Simplifies data fetching and caching.
 
 Day.js: Lightweight library for date manipulation.
 
-
 📫 Contact
 
 For any queries or suggestions, please reach out to us at:
 
-Email: dinesh.s.shinde1.com
+Email: dinesh.s.shinde1@gmail.com
 
 GitHub: https://github.com/DSHINDE21
 
-hank you for exploring the Crypto Dashboard project!
-
+Thank you for exploring the Crypto Dashboard project!
