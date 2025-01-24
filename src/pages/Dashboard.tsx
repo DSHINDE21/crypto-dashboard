@@ -1,10 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useQuery } from '@tanstack/react-query';
-import { RootState } from '../store';
-// import { fetchCryptoData } from '../utils/fetchData';
+import { RootState } from '@store/index';
 import { Line } from 'react-chartjs-2';
-import { Typography, Box, Card, CardContent, Grid } from '@mui/material';
+import {
+  Typography,
+  Box,
+  Card,
+  CardContent,
+  Grid2 as Grid,
+  MenuItem,
+  Select,
+  Skeleton,
+  Avatar,
+} from '@mui/material';
+import dayjs from 'dayjs';
+import { fetchCryptoData } from '@/services';
+
+// Import and register necessary components from Chart.js
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,9 +28,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { fetchCryptoData } from '@/services';
 
-// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -33,43 +44,121 @@ const Dashboard: React.FC = () => {
     (state: RootState) => state.crypto.selectedCrypto,
   );
 
+  const [dateRange, setDateRange] = useState<string>('7');
+
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['cryptoData', selectedCrypto],
-    queryFn: () => fetchCryptoData(selectedCrypto),
+    queryKey: ['cryptoData', selectedCrypto, dateRange],
+    queryFn: () => fetchCryptoData(selectedCrypto, parseInt(dateRange)),
     refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 5, // Cache data for 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
-  // Loading and error states
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Error: {(error as Error).message}</p>;
+  const handleDateRangeChange = (
+    event: React.ChangeEvent<{ value: unknown }>,
+  ) => {
+    setDateRange(event.target.value as string);
+  };
 
-  const { currentPrice, percentageChange24h, historicalData } = data!;
+  if (isLoading) {
+    return (
+      <Box sx={{ padding: 3 }}>
+        <Typography variant="h4" sx={{ marginBottom: 2, fontWeight: 'bold' }}>
+          Loading{' '}
+          {selectedCrypto.charAt(0).toUpperCase() + selectedCrypto.slice(1)}...
+        </Typography>
+        <Grid container spacing={3}>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Grid size={{ xs: 12, md: 4 }} key={index}>
+              <Skeleton variant="rectangular" height={120} />
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+    );
+  }
 
-  // Chart data
+  if (isError) {
+    return (
+      <Typography color="error">Error: {(error as Error).message}</Typography>
+    );
+  }
+
+  if (!data) {
+    return <Typography>No details found for {selectedCrypto}</Typography>;
+  }
+
+  const {
+    currentPrice,
+    percentageChange24h,
+    tradingVolume,
+    historicalData,
+    iconUrl,
+  } = data;
+
+  const chartLabels = historicalData.map((_: unknown, index: number) =>
+    dayjs()
+      .subtract(historicalData.length - 1 - index, 'day')
+      .format('MMM DD'),
+  );
+
   const chartData = {
-    labels: Array(historicalData.length).fill(''), // Blank labels
+    labels: chartLabels,
     datasets: [
       {
         label: 'Price (USD)',
         data: historicalData,
-        borderColor: 'rgba(75,192,192,1)', // Line color
-        backgroundColor: 'rgba(75,192,192,0.2)', // Area under the line
-        tension: 0.4, // Smooth curve
+        borderColor: 'rgba(75,192,192,1)',
+        backgroundColor: 'rgba(75,192,192,0.2)',
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
       },
     ],
   };
 
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false, // Disable the default aspect ratio
+    aspectRatio: 2, // Aspect ratio = width / height, adjust as needed
+    plugins: {
+      legend: { display: true, position: 'top' },
+      tooltip: {
+        callbacks: {
+          label: function (context: any) {
+            return `$${context?.raw?.toFixed(2)}`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        title: { display: true, text: 'Date', font: { weight: 'bold' } },
+        grid: { display: false },
+      },
+      y: {
+        title: { display: true, text: 'Price (USD)', font: { weight: 'bold' } },
+        grid: { color: 'rgba(200, 200, 200, 0.2)' },
+      },
+    },
+  };
+
   return (
     <Box sx={{ padding: 3 }}>
-      {/* Header and Cryptocurrency Info */}
+      {/* currencyName and Icon component */}
       <Typography variant="h4" sx={{ marginBottom: 2, fontWeight: 'bold' }}>
-        {selectedCrypto.charAt(0).toUpperCase() + selectedCrypto.slice(1)}
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Avatar
+            alt={`${selectedCrypto} logo`}
+            src={iconUrl}
+            sx={{ width: 30, height: 30, marginRight: 1 }}
+          />
+          {selectedCrypto.charAt(0).toUpperCase() + selectedCrypto.slice(1)}
+        </Box>
       </Typography>
 
+      {/* Cards component */}
       <Grid container spacing={3}>
-        {/* Current Price Card */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
               <Typography variant="h6">Current Price</Typography>
@@ -80,8 +169,7 @@ const Dashboard: React.FC = () => {
           </Card>
         </Grid>
 
-        {/* 24hr Change Card */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
               <Typography variant="h6">24hr Change</Typography>
@@ -95,15 +183,42 @@ const Dashboard: React.FC = () => {
           </Card>
         </Grid>
 
-        {/* Line Chart */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
-              <Typography variant="h6">Price History (7 Days)</Typography>
-              <Box sx={{ marginTop: 2 }}>{/* <Line data={chartData} /> */}</Box>
+              <Typography variant="h6">Trading Volume (24h)</Typography>
+              <Typography variant="h5" color="textSecondary">
+                ${tradingVolume.toLocaleString()}
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
+      </Grid>
+
+      {/* Chart component */}
+      <Grid size={{ xs: 12 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6">Price History</Typography>
+            <Box sx={{ marginTop: 2 }}>
+              <Select
+                value={dateRange}
+                onChange={handleDateRangeChange}
+                sx={{ minWidth: 200 }}
+              >
+                <MenuItem value="7">Last 7 Days</MenuItem>
+                <MenuItem value="30">Last 30 Days</MenuItem>
+                <MenuItem value="60">Last 60 Days</MenuItem>
+                <MenuItem value="90">Last 90 Days</MenuItem>
+                <MenuItem value="365">Last 1 Year</MenuItem>
+              </Select>
+
+              <Box sx={{ height: 300 }}>
+                <Line data={chartData} options={chartOptions} />
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
       </Grid>
     </Box>
   );

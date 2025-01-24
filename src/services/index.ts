@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-// Fetch current price, percentage change, market cap, supply, and volume
-export const fetchCryptoData = async (cryptoId: string) => {
+export const fetchCryptoData = async (cryptoId: string, dateRange: number) => {
   // Fetch basic info from CoinCap API
   const currentResponse = await axios.get(
     `https://api.coincap.io/v2/assets/${cryptoId}`,
@@ -15,24 +14,25 @@ export const fetchCryptoData = async (cryptoId: string) => {
   const circulatingSupply = parseFloat(currentResponse.data.data.supply);
   const tradingVolume = parseFloat(currentResponse.data.data.volumeUsd24Hr);
 
-  // Fetch description from CoinGecko API
+  // Fetch description and icon from CoinGecko API
   const descriptionResponse = await axios.get(
     `https://api.coingecko.com/api/v3/coins/${cryptoId}`,
   );
 
   const description =
     descriptionResponse.data?.description?.en || 'Description not available';
+  const iconUrl = descriptionResponse.data?.image?.small; // Get the small icon URL
 
-  // Fetch historical data (last 7 days)
+  // Fetch historical data based on date range
   const now = Date.now();
-  const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+  const startDate = now - dateRange * 24 * 60 * 60 * 1000;
 
   const historicalResponse = await axios.get(
     `https://api.coincap.io/v2/assets/${cryptoId}/history`,
     {
       params: {
         interval: 'd1', // Daily intervals
-        start: sevenDaysAgo,
+        start: startDate,
         end: now,
       },
     },
@@ -50,5 +50,6 @@ export const fetchCryptoData = async (cryptoId: string) => {
     tradingVolume,
     historicalData,
     description,
+    iconUrl, // Add iconUrl to the return data
   };
 };
