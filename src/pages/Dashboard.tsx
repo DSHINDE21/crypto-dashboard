@@ -28,6 +28,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 ChartJS.register(
   CategoryScale,
@@ -163,7 +164,7 @@ const Dashboard: React.FC = () => {
             <CardContent>
               <Typography variant="h6">Current Price</Typography>
               <Typography variant="h5" color="primary">
-                ${currentPrice.toFixed(2)}
+                {formatCurrency(currentPrice)}
               </Typography>
             </CardContent>
           </Card>
@@ -188,7 +189,7 @@ const Dashboard: React.FC = () => {
             <CardContent>
               <Typography variant="h6">Trading Volume (24h)</Typography>
               <Typography variant="h5" color="textSecondary">
-                ${tradingVolume.toLocaleString()}
+                {formatCurrency(tradingVolume)}
               </Typography>
             </CardContent>
           </Card>

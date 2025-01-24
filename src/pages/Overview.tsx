@@ -62,7 +62,7 @@ const Overview: React.FC = () => {
           {selectedCrypto.charAt(0).toUpperCase() + selectedCrypto.slice(1)}...
         </Typography>
         <Grid container spacing={3}>
-          {Array.from({ length: 3 }).map((_, index) => (
+          {Array.from({ length: 6 }).map((_, index) => (
             <Grid size={{ xs: 12, md: 4 }} key={index}>
               <Skeleton variant="rectangular" height={120} />
             </Grid>
