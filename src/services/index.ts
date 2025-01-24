@@ -1,3 +1,4 @@
+import { config } from '@/config';
 import axios from 'axios';
 
 export const fetchCryptoData = async (
@@ -6,7 +7,7 @@ export const fetchCryptoData = async (
 ) => {
   // Fetch basic info from CoinCap API
   const currentResponse = await axios.get(
-    `https://api.coincap.io/v2/assets/${cryptoId}`,
+    `${config.COINCAP_BASE_URL}/v2/assets/${cryptoId}`,
   );
 
   const currentPrice = parseFloat(currentResponse.data.data.priceUsd);
@@ -22,7 +23,7 @@ export const fetchCryptoData = async (
 
   // Fetch description and icon from CoinGecko API
   const descriptionResponse = await axios.get(
-    `https://api.coingecko.com/api/v3/coins/${cryptoId}`,
+    `${config.COINGECKO_BASE_URL}/api/v3/coins/${cryptoId}`,
   );
 
   const description =
@@ -38,7 +39,7 @@ export const fetchCryptoData = async (
   const startDate = now - dateRange * 24 * 60 * 60 * 1000;
 
   const historicalResponse = await axios.get(
-    `https://api.coincap.io/v2/assets/${cryptoId}/history`,
+    `${config.COINCAP_BASE_URL}/v2/assets/${cryptoId}/history`,
     {
       params: {
         interval: 'd1', // Daily intervals
