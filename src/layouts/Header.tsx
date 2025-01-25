@@ -8,7 +8,7 @@ import {
   Link,
   Box,
 } from '@mui/material';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { setSelectedCrypto } from '@/store/slices/cryptoSlice';
@@ -20,6 +20,7 @@ const navMenuItems = [
   { label: 'History', path: '/history' },
 ];
 const Header: React.FC = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
 
   // Access the selectedCrypto value from Redux store
@@ -35,7 +36,11 @@ const Header: React.FC = () => {
   return (
     <AppBar position="sticky" color="primary" sx={{ zIndex: 1300 }}>
       <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 600 }}>
+        <Typography
+          variant="h6"
+          sx={{ flexGrow: 1, fontWeight: 600, cursor: 'pointer' }}
+          onClick={() => navigate('/dashboard')}
+        >
           Crypto Dashboard
         </Typography>
         <Select
