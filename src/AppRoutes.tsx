@@ -1,31 +1,36 @@
-import React, { Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { CircularProgress, Box } from '@mui/material';
 
-const Layout = React.lazy(() => import('@/layouts/Layout'));
-const LoadingFallback = React.lazy(() => import('@/layouts/LoadingFallback'));
-const Dashboard = React.lazy(() => import('@pages/Dashboard'));
-const Overview = React.lazy(() => import('@pages/Overview'));
-const History = React.lazy(() => import('@pages/History'));
+// Lazy load components
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const CryptoDetails = lazy(() => import('./pages/CryptoDetails'));
+const Portfolio = lazy(() => import('./pages/Portfolio'));
+const Settings = lazy(() => import('./pages/Settings'));
 
-// TODO: Refactor the routing logic into a centralized "routes" folder.
-const routes = [
-  { path: '/dashboard', element: <Dashboard /> },
-  { path: '/overview', element: <Overview /> },
-  { path: '/history', element: <History /> },
-  { path: '/', element: <Navigate to="/dashboard" replace /> }, // Default route as no login  there
-  { path: '*', element: <div>Page Not Found</div> },
-];
-
-const AppRoutes: React.FC = () => (
-  <Suspense fallback={<LoadingFallback />}>
-    <Layout>
-      <Routes>
-        {routes.map(({ path, element }) => (
-          <Route key={path} path={path} element={element} />
-        ))}
-      </Routes>
-    </Layout>
-  </Suspense>
+// Loading component
+const LoadingFallback = () => (
+  <Box
+    display="flex"
+    justifyContent="center"
+    alignItems="center"
+    minHeight="100vh"
+  >
+    <CircularProgress />
+  </Box>
 );
+
+const AppRoutes = () => {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/crypto/:id" element={<CryptoDetails />} />
+        <Route path="/portfolio" element={<Portfolio />} />
+        <Route path="/settings" element={<Settings />} />
+      </Routes>
+    </Suspense>
+  );
+};
 
 export default AppRoutes;

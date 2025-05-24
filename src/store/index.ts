@@ -1,30 +1,42 @@
 import { configureStore } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import cryptoReducer from '@store/slices/cryptoSlice';
+import { cryptoApi } from './api/cryptoApi';
 
-// Configure redux-persist
+// Import your other reducers here
+import themeReducer from './slices/themeSlice';
+import userReducer from './slices/userSlice';
+import cryptoReducer from './slices/cryptoSlice';
+
 const persistConfig = {
   key: 'root',
   storage,
+  whitelist: ['theme', 'user', 'crypto'], // Only persist these reducers
 };
 
-const persistedReducer = persistReducer(persistConfig, cryptoReducer);
+const persistedThemeReducer = persistReducer(persistConfig, themeReducer);
+const persistedUserReducer = persistReducer(persistConfig, userReducer);
+const persistedCryptoReducer = persistReducer(persistConfig, cryptoReducer);
 
-const store = configureStore({
+export const store = configureStore({
   reducer: {
-    crypto: persistedReducer, // Use persisted reducer
+    [cryptoApi.reducerPath]: cryptoApi.reducer,
+    theme: persistedThemeReducer,
+    user: persistedUserReducer,
+    crypto: persistedCryptoReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'], // Ignore redux-persist actions
+        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
       },
-    }),
+    }).concat(cryptoApi.middleware),
 });
+
+setupListeners(store.dispatch);
+
+export const persistor = persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
-
-export const persistor = persistStore(store); // Persistor to manage state persistence
-export default store;

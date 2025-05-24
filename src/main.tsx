@@ -1,42 +1,20 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import './index.css';
-import App from './App.tsx';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
-import store from '@store/index.ts';
-import {
-  QueryCache,
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import { PersistGate } from 'redux-persist/integration/react';
+import { store, persistor } from './store';
+import { QueryProvider } from './providers/QueryProvider';
+import App from './App';
+import './index.css';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      staleTime: 30 * 1000, //expiryTime
-    },
-  },
-  queryCache: new QueryCache({
-    onError: async (error) => {
-      const err = error as AxiosError;
-      if (err.request?.status === 401) {
-        queryClient.clear();
-        window.location.replace('/');
-      }
-    },
-  }),
-});
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
     <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
+      <PersistGate loading={null} persistor={persistor}>
+        <QueryProvider>
+          <App />
+        </QueryProvider>
+      </PersistGate>
     </Provider>
-  </StrictMode>,
+  </React.StrictMode>,
 );
