@@ -11,6 +11,7 @@ export const fetchCryptoData = async (
   cryptoId: string,
   dateRange: number = 7,
 ) => {
+  console.log('aaa', config.COINCAP_API_KEY);
   // Fetch basic info from CoinCap API
   const currentResponse = await axios.get(
     `${config.COINCAP_BASE_URL}/v3/assets/${cryptoId}`,
