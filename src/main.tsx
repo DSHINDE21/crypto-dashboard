@@ -25,7 +25,6 @@ const queryClient = new QueryClient({
       const err = error as AxiosError;
       if (err.request?.status === 401) {
         queryClient.clear();
-        window.location.replace('/');
       }
     },
   }),

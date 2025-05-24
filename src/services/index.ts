@@ -1,13 +1,24 @@
 import { config } from '@/config';
 import axios from 'axios';
 
+interface HistoricalDataEntry {
+  priceUsd: string;
+  time: number;
+  date: string;
+}
+
 export const fetchCryptoData = async (
   cryptoId: string,
   dateRange: number = 7,
 ) => {
   // Fetch basic info from CoinCap API
   const currentResponse = await axios.get(
-    `${config.COINCAP_BASE_URL}/v2/assets/${cryptoId}`,
+    `${config.COINCAP_BASE_URL}/v3/assets/${cryptoId}`,
+    {
+      params: {
+        apiKey: config.COINCAP_API_KEY,
+      },
+    },
   );
 
   const currentPrice = parseFloat(currentResponse.data.data.priceUsd);
@@ -39,18 +50,19 @@ export const fetchCryptoData = async (
   const startDate = now - dateRange * 24 * 60 * 60 * 1000;
 
   const historicalResponse = await axios.get(
-    `${config.COINCAP_BASE_URL}/v2/assets/${cryptoId}/history`,
+    `${config.COINCAP_BASE_URL}/v3/assets/${cryptoId}/history`,
     {
       params: {
         interval: 'd1', // Daily intervals
         start: startDate,
         end: now,
+        apiKey: config.COINCAP_API_KEY,
       },
     },
   );
 
-  const historicalData = historicalResponse.data.data.map((entry: any) =>
-    parseFloat(entry.priceUsd),
+  const historicalData = historicalResponse.data.data.map(
+    (entry: HistoricalDataEntry) => parseFloat(entry.priceUsd),
   );
 
   return {
